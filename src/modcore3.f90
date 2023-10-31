@@ -24,7 +24,7 @@
 ! Teter, Phys. Rev. B 48, 5031 (1993) , Appendix, as 
 
  subroutine modcore3(icmod,rhops,rhotps,rhoc,rhoae,rhotae,rhomod, &
-&                   fcfact,rcfact,irps,mmax,rr,nc,nv,la,zion,iexc)
+&                   fcfact,rcfact,irps,mmax,rr,nc,nv,la,zion,iexc,eps_dielectric)
 
 !icmod  3 coefficient optimizaion, 4 for specivied fcfact and rfact
 !rhops  state-by-state pseudocharge density
@@ -54,6 +54,7 @@
  real(dp) :: rhotps(mmax),rhoc(mmax),rr(mmax)
  real(dp) :: zion,fcfact,rcfact
  logical :: srel
+ real(dp) :: eps_dielectric
 
 !Output variables
  real(dp) :: rhomod(mmax,5)
@@ -95,7 +96,7 @@
 &                  '  based on d2Exc/dn_idn_j'
 
  call der2exc(rhotae,rhoc,rhoae,rr,d2excae,d2excps,d2mdiff, &
-&                   zion,iexc,nc,nv,la,irmod,mmax)
+&                   zion,iexc,nc,nv,la,irmod,mmax,eps_dielectric)
 
  write(6,'(/a/)') 'd2excae - all-electron derivatives'
  do kk=1,nv
@@ -110,7 +111,7 @@
  rhomod(:,:)=0.0d0
 
  call der2exc(rhotps,rhomod(1,1),rhops,rr,d2excps,d2excae,d2mdiff, &
-&                   zion,iexc,nc,nv,la,irmod,mmax)
+&                   zion,iexc,nc,nv,la,irmod,mmax,eps_dielectric)
 
  write(6,'(/a/)') 'd2excps - pseudofunction derivatives with no core correction'
  do kk=1,nv
@@ -179,7 +180,7 @@
    end do
 
    call der2exc(rhotps,rhomod(1,1),rhops,rr,d2excps,d2excae,d2mdiff, &
-&                     zion,iexc,nc,nv,la,irmod,mmax)
+&                     zion,iexc,nc,nv,la,irmod,mmax,eps_dielectric)
    fta(jj)=1.0d3*d2mdiff
 
    if(d2mdiff<d2min) then
@@ -225,7 +226,7 @@
    end do
 
    call der2exc(rhotps,rhomod(1,1),rhops,rr,d2excps,d2excae,d2mdiff, &
- &                    zion,iexc,nc,nv,la,irmod,mmax)
+ &                    zion,iexc,nc,nv,la,irmod,mmax, eps_dielectric)
    ff(kk)=d2mdiff
 
 !  write(6,'(i4,a,2f10.4,1p,e14.4)') kk,'  xt',xt(1),xt(2),ff(kk)
@@ -288,7 +289,7 @@
    end do
 
   call der2exc(rhotps,rhomod(1,1),rhops,rr,d2excps,d2excae,d2mdiff, &
-&                    zion,iexc,nc,nv,la,irmod,mmax)
+&                    zion,iexc,nc,nv,la,irmod,mmax, eps_dielectric)
   fr=d2mdiff
 ! write(6,'(i4,a,2f10.4,1p,e14.4)') kk,'  xr',xr(1),xr(2),fr
 
@@ -320,7 +321,7 @@
    end do
 
    call der2exc(rhotps,rhomod(1,1),rhops,rr,d2excps,d2excae,d2mdiff, &
-&                     zion,iexc,nc,nv,la,irmod,mmax)
+&                     zion,iexc,nc,nv,la,irmod,mmax, eps_dielectric)
    fe=d2mdiff
 ! write(6,'(i4,a,2f10.4,1p,e14.4)') kk,'  xe',xe(1),xe(2),fe
 
@@ -356,7 +357,7 @@
    end do
 
   call der2exc(rhotps,rhomod(1,1),rhops,rr,d2excps,d2excae,d2mdiff, &
-&                    zion,iexc,nc,nv,la,irmod,mmax)
+&                    zion,iexc,nc,nv,la,irmod,mmax, eps_dielectric)
   fc=d2mdiff
 !  write(6,'(i4,a,2f10.4,1p,e14.4)') kk,'  xc',xc(1),xc(2),fc
   if(fc<ff(3)) then
@@ -387,7 +388,7 @@
    end do
 
    call der2exc(rhotps,rhomod(1,1),rhops,rr,d2excps,d2excae,d2mdiff, &
-&                     zion,iexc,nc,nv,la,irmod,mmax)
+&                     zion,iexc,nc,nv,la,irmod,mmax, eps_dielectric)
    ff(jj)=d2mdiff
 !  write(6,'(i4,a,2f10.4,1p,e14.4)') kk,' xrd',xx(1,jj),xx(2,jj),ff(jj)
   end do !jj
@@ -435,7 +436,7 @@
  end do
 
  call der2exc(rhotps,rhomod(1,1),rhops,rr,d2excps,d2excae,d2mdiff, &
-&                   zion,iexc,nc,nv,la,irmod,mmax)
+&                   zion,iexc,nc,nv,la,irmod,mmax, eps_dielectric)
  
 write(6,'(/a/)') 'd2excps - pseudofunction derivatives with core correction' 
  do kk=1,nv

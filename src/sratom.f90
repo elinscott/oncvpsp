@@ -38,7 +38,7 @@
 !etot  all-electron total energy (output)
 !ierr  error flag
 !srel  .true. for scalar-relativistic, .false. for non-relativistic
-
+ use ifcore
  implicit none
  integer, parameter :: dp=kind(1.0d0)
 
@@ -67,13 +67,13 @@
  integer :: ii,jj
  logical :: convg
 
- real(dp), allocatable :: u(:),up(:)
+ real(dp), allocatable :: u(:),up(:),eps(:)
  real(dp), allocatable :: vo(:),vi1(:),vo1(:),vxc(:)
 
 ! blend parameter for Anderson iterative potential mixing
  real(dp), parameter ::  bl=0.5d0
 
- allocate(u(mmax),up(mmax))
+ allocate(u(mmax),up(mmax),eps(mmax))
  allocate(vo(mmax),vi1(mmax),vo1(mmax),vxc(mmax))
 
 ! why all this is necessary is unclear, but it seems to be
@@ -81,6 +81,7 @@
  dr=0.d0; eeel=0.d0; eexc=0.d0; et=0.d0; rl=0.d0; rl1=0.d0
  sd=0.d0; sf=0.d0; sn=0.d0; eeig=0.d0; thl=0.d0; vn=0.d0; zion=0.d0 
  nin=0; mch=0
+ eps(:)=1.d0
 
  al = 0.01d0 * dlog(rr(101) / rr(1))
  amesh = dexp(al)
@@ -118,7 +119,7 @@
      et=ea(ii)
      ierr = 0
      call lschfb(na(ii),la(ii),ierr,et, &
-&                rr,vi,u,up,zz,mmax,mch,srel)
+&                rr,vi,u,up,zz,mmax,mch,srel,eps)
      if(ierr .ne. 0) then
        write(6,'(/a,3i4)') 'sratom123: lschfb convergence ERROR n,l,iter=', &
 &       na(ii),la(ii),it
@@ -154,7 +155,7 @@
 
 ! output potential
    call vout(0,rho,rhoc,vo,vxc,sf-zz,eeel,eexc, &
-&            rr,mmax,iexc)
+&            rr,mmax,iexc, eps)
 
   etot =  eeig + eexc - 0.5d0*eeel
 
@@ -199,7 +200,7 @@
 ! output potential for e-e interactions
 
  call vout(0,rho,rhoc,vo,vxc,sf,eeel,eexc, &
-&          rr,mmax,iexc)
+&          rr,mmax,iexc, eps)
 
  etot =  eeig + eexc - 0.5d0*eeel
 

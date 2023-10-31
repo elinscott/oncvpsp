@@ -313,6 +313,10 @@
      write(6,'(t8,a)') &
 &        'functional="WC"'
 
+   else if(iexc==-1012) then
+     write(6,'(t8,a)') &
+&        'functional="SLA  PW   NOGX NOGC"'
+
    else
      write(6,'(t8,a)') &
 &        'upfout: ERROR iexc = ',iexc,' is presently unsupported for UPF output'

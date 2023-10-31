@@ -21,7 +21,7 @@
 ! differ from the all-electron wave functions 
 !
  subroutine der2exc(rhotot,rhoc,rho,rr,d2exc,d2ref,d2mdiff, &
-&                   zion,iexc,nc,nv,la,ircut,mmax)
+&                   zion,iexc,nc,nv,la,ircut,mmax,eps)
 
 ! rhotot  total valence charge, all-electron of pseudo
 ! rhoc  core charge, all-electron or model
@@ -47,6 +47,7 @@
  real(dp) :: zion
  integer :: la(nv+nc)
  integer :: iexc,nc,nv,ircut,mmax
+ real(dp) :: eps(mmax)
 
 ! Output variables
  real(dp) :: d2exc(nv,nv)
@@ -65,19 +66,19 @@
    dvxc(:,kk)=0.0d0
 
    rhot(:)=rhotot(:)-2.d0*hh*rho(:,kk)
-   call vout(1,rhot,rhoc,vo,vxct,zion,eeel,eexc,rr,mmax,iexc)
+   call vout(1,rhot,rhoc,vo,vxct,zion,eeel,eexc,rr,mmax,iexc,eps)
    dvxc(:,kk)=dvxc(:,kk)+( 2.0d0/(24.0d0*hh))*vxct(:)
 
    rhot(:)=rhotot(:)     -hh*rho(:,kk)
-   call vout(1,rhot,rhoc,vo,vxct,zion,eeel,eexc,rr,mmax,iexc)
+   call vout(1,rhot,rhoc,vo,vxct,zion,eeel,eexc,rr,mmax,iexc,eps)
    dvxc(:,kk)=dvxc(:,kk)+(-16.0d0/(24.0d0*hh))*vxct(:)
 
    rhot(:)=rhotot(:)     +hh*rho(:,kk)
-   call vout(1,rhot,rhoc,vo,vxct,zion,eeel,eexc,rr,mmax,iexc)
+   call vout(1,rhot,rhoc,vo,vxct,zion,eeel,eexc,rr,mmax,iexc,eps)
    dvxc(:,kk)=dvxc(:,kk)+( 16.0d0/(24.0d0*hh))*vxct(:)
 
    rhot(:)=rhotot(:)-2.d0*hh*rho(:,kk)
-   call vout(1,rhot,rhoc,vo,vxct,zion,eeel,eexc,rr,mmax,iexc)
+   call vout(1,rhot,rhoc,vo,vxct,zion,eeel,eexc,rr,mmax,iexc,eps)
    dvxc(:,kk)=dvxc(:,kk)+(-2.0d0/(24.0d0*hh))*vxct(:)
 
  end do !kk

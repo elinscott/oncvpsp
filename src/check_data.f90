@@ -94,7 +94,7 @@
   end if
  end do
 
- if(sf>zz) then
+ if(sf>zz + 1e-10) then
   write(6,'(a)') 'test_data: reference configuration is negative ion'
   ierr=ierr+1
  end if
@@ -248,7 +248,7 @@
     end if
    end do
   
-   if(sf>zz) then
+   if(sf>zz + 1e-8) then
     write(6,'(a,i4)') 'test_data: negative ion, test configuration',jj-1
     ierr=ierr+1
    end if

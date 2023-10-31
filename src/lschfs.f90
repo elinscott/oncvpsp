@@ -16,7 +16,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <http://www.gnu.org/licenses/>.
 !
- subroutine lschfs(nn,ll,ierr,ee,rr,vv,uu,up,zz,mmax,mch,srel)
+ subroutine lschfs(nn,ll,ierr,ee,rr,vv,uu,up,zz,mmax,mch,srel,eps)
 
 ! integrates radial Pauli-type scalar-relativistic equation
 ! on a logarithmic mesh
@@ -45,6 +45,7 @@
  real(dp) :: zz
  integer :: ll,mch
  logical :: srel
+ real(dp) :: eps(mmax)
  
 !Output variables
  real(dp) :: uu(mmax),up(mmax)

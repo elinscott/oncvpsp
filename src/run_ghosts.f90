@@ -17,7 +17,7 @@
 ! along with this program.  If not, see <http://www.gnu.org/licenses/>.
 !
  subroutine run_ghosts(lmax,la,ea,nc,nv,lloc,irc,qmsbf, &
-&                    vkb,evkb,nproj,rr,vp,mmax,mxprj)
+&                    vkb,evkb,nproj,rr,vp,mmax,mxprj,eps_dielectric)
 
 ! Two tests for ghosts;  The local potential is terminated by a hard wall
 ! barrier at a radius of mbfact*rc, presently 3*rc.  A basis set is formed
@@ -66,6 +66,7 @@
  integer :: la(30),irc(6),nproj(6)
  real(dp) :: rr(mmax),vp(mmax,5),vkb(mmax,mxprj,4)
  real(dp):: qmsbf(6),ea(30),evkb(mxprj,4)
+ real(dp) :: eps_dielectric(mmax)
 
 !Output variables - printing only
 
@@ -194,7 +195,7 @@
        emin=1.1d0*ea(nc+kk)
        call lschvkbb(nn,ll,nprj,ierr,ee,emin,emax, &
 &                    rr,vp(1,lloc+1),vkb(1,1,l1),evkb(1,l1), &
-&                    uu,up,mmax,mch)
+&                    uu,up,mmax,mch,eps_dielectric)
        if(ierr/=0) then
          write(6,'(a,3i4,2f12.6)') 'run_ghosts: lschvkbb ERROR', &
 &              nn,ll,ierr,ea(nc+kk),ee
@@ -226,7 +227,7 @@
        emin=2.0d0*ee
        call lschvkbb(ll+1,ll,nprj,ierr,ee,emin,emax, &
 &                    rr,vp(1,lloc+1),vkb(1,1,l1),evkb(1,l1), &
-&                    uu,up,mmax,mch)
+&                    uu,up,mmax,mch, eps_dielectric)
        if(ierr/=0) ee=0.0d0
        do jj=1,10
          et=dmin1(ee-eps,ee*(1.0d0+eps))

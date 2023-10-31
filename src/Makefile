@@ -6,15 +6,16 @@
 
 include ../make.inc
 
-OBJS_ALL =	aeo.o check_data.o const_basis.o dpnint.o eresid.o exchdl.o \
+OBJS_ALL =	aeo.o check_data.o const_basis.o dielectric.o dpnint.o eresid.o exchdl.o \
 		exc_off_pbe.o excpzca.o excwig.o ldiracfb.o ldiracfs.o \
 		lschfb.o lschfs.o lschkb.o lschpb.o lschpse.o lschps.o \
-		lschvkbbe.o lschvkbb.o lschvkbs.o modcore.o optimize.o \
+		lschvkbbe.o lschvkbb.o lschvkbs.o modcore.o optimize.o poisson_solver.o \
 		pspot.o qroots.o run_optimize.o sbf8.o sbf_basis.o \
 		sbf_rc_der.o tfapot.o vkboutwf.o vkbphsft.o vout.o vpinteg.o \
 		vploc.o wf_rc_der.o modcore2.o gg1cc.o gp1cc.o gpp1cc.o \
 		der2exc.o modcore3.o sbf_basis_con.o run_ghosts.o \
-		lschpsbar.o vrel.o
+		lschpsbar.o vrel.o spherically_integrate.o \
+        screen_potential_via_gaussian_charge.o
 
 OBJS_NRSR =	fphsft.o fpovlp.o gnu_script.o linout.o psatom.o \
 		relatom.o run_config.o run_diag.o run_phsft.o run_plot.o \

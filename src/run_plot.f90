@@ -18,7 +18,7 @@
 !
  subroutine run_plot(lmax,npa,epa,lloc,irc, &
 &                    vkb,evkb,nproj,rr,vfull,vp,vpuns,zz,mmax,mxprj,drl,nrl, &
-&                    rho,rhoc,rhomod,srel,cvgplt)
+&                    rho,rhoc,rhomod,srel,cvgplt,eps)
 
 
 ! write output for plotting pseudopotentials, model core charge, and
@@ -58,6 +58,7 @@
  real(dp) :: rho(mmax),rhoc(mmax),rhomod(mmax,5)
  real(dp):: epa(mxprj,6),evkb(mxprj,4),cvgplt(2,7,mxprj,4)
  logical :: srel
+ real(dp) :: eps(mmax)
 
 !Output variables - printing only
 
@@ -138,7 +139,7 @@
 &           ', all-electron wave function', ', pseudo w-f'
        etest=epa(iprj,l1)
        call lschfb(npa(iprj,l1),ll,ierr,etest, &
-&                  rr,vfull,uu,up,zz,mmax,mch,srel)
+&                  rr,vfull,uu,up,zz,mmax,mch,srel,eps)
        if(ierr .ne. 0) then
           write(6,'(/a,3i4)') 'run_plot: lschfb convergence ERROR n,l,ierr=', &
 &         npa(iprj,l1),ll,ierr
@@ -150,16 +151,16 @@
         
        call lschvkbb(ll+iprj,ll,npr,ierr,etest,emin,emax, &
 &                    rr,vp(1,lloc+1),vkb(1,1,l1),evkb(1,l1), &
-&                    u2,up,mmax,mch)
+&                    u2,up,mmax,mch,eps)
        sgnae=1.0d0
        sgnps=1.0d0
      else
        write(6,'(//a,i2,a,i2,a,a/)') 'scattering, iprj=',iprj,',  l=',ll, &
 &           ', all-electron wave function', ', pseudo w-f'
        call lschfs(nn,ll,ierr,epa(iprj,l1), &
-&                  rr,vfull,uu,up,zz,mmax,n2,srel)
+&                  rr,vfull,uu,up,zz,mmax,n2,srel,eps)
        call lschvkbs(ll,npr,epa(iprj,l1),rr,vp(1,lloc+1), &
-&                    vkb(1,1,l1),evkb(1,l1),u2,up,mmax,n2)
+&                    vkb(1,1,l1),evkb(1,l1),u2,up,mmax,n2,eps)
        sgnae=sign(1.0d0,uu(n2))
        sgnps=sign(1.0d0,u2(n2))
      end if

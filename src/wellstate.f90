@@ -16,7 +16,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <http://www.gnu.org/licenses/>.
 !
- subroutine wellstate(nnin,ll,irc,ep,rr,vfull,uu,up,zz,mmax,mch,srel)
+ subroutine wellstate(nnin,ll,irc,ep,rr,vfull,uu,up,zz,mmax,mch,srel,eps_dielectric)
 
 !creates quantum well to confine positive-energy state, and calculates
 !the resulting all-electron wave function
@@ -43,6 +43,7 @@
  real(dp) :: ep,zz
  integer :: nnin,ll,irc,mmax !(nnin is actually in/out)
  logical :: srel
+ real(dp) :: eps_dielectric
 
 !Output variables
  real(dp) :: uu(mmax),up(mmax)
@@ -63,7 +64,7 @@
 
  uu(:)=0.0d0 ; up(:)=0.0d0
  et=-0.1d0
- call lschfb(nnin,ll,ierr,et,rr,vfull,uu,up,zz,mmax,mch,srel)
+ call lschfb(nnin,ll,ierr,et,rr,vfull,uu,up,zz,mmax,mch,srel,eps_dielectric)
 
 !if bound state is found, check its localization
  if(ierr==0) then
@@ -142,7 +143,7 @@
 
 !find bound state in well
      et=ep
-     call lschfb(nn,ll,ierr,et,rr,vwell,uu,up,zz,mmax,mch,srel)
+     call lschfb(nn,ll,ierr,et,rr,vwell,uu,up,zz,mmax,mch,srel,eps_dielectric)
      if(ierr<0) then
       write(6,'(a,i3,a,i3)') &
 &           'wellstate: ERROR lschfb convergence error, n=',nn,' l=',ll

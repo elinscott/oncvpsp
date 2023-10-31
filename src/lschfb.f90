@@ -16,7 +16,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <http://www.gnu.org/licenses/>.
 !
- subroutine lschfb(nn,ll,ierr,ee,rr,vv,uu,up,zz,mmax,mch,srel)
+ subroutine lschfb(nn,ll,ierr,ee,rr,vv,uu,up,zz,mmax,mch,srel,dielectric)
 
 !Finds bound states of an all-electron atomic potential using
 !Pauli-type  scalar-relativistic Schroedinger equation
@@ -43,6 +43,7 @@
  integer :: nn,ll
  integer :: mmax
  logical :: srel
+ real(dp) :: dielectric(mmax)
 
 !Output variables
  real(dp) :: uu(mmax),up(mmax)

@@ -254,7 +254,7 @@ contains
 
     character(len=1000) :: s1, s2
     integer :: ii
-#if LIBXC_VERSION>=300
+#if LIBXC_VERSION<300
     type(xc_f90_pointer_t) :: str
 #endif
 

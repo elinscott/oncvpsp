@@ -81,6 +81,7 @@
  real(dp), allocatable :: epa(:,:),fpa(:,:)
  real(dp), allocatable :: uua(:,:),upa(:,:)
  real(dp), allocatable :: vr(:,:,:)
+ real(dp), allocatable :: eps_vacuum(:)
 
  character*2 :: atsym
  character*4 :: psfile
@@ -256,6 +257,8 @@
 !
 ! full potential atom solution
 !
+   allocate(eps_vacuum(mmax))
+   eps_vacuum(:) = 1.0d0
    call sratom(na,la,ea,fa,rpk,nc,nc+nv,it,rhoc,rho, &
 &              rr,vfull,zz,mmax,iexc,etot,ierr,srel)
 !
@@ -384,7 +387,7 @@
          iprj=iprj+1
          et=ea(kk)
          call lschfb(na(kk),la(kk),ierr,et, &
-&                      rr,vfull,uu,up,zz,mmax,mch,srel)
+&                      rr,vfull,uu,up,zz,mmax,mch,srel,eps_vacuum)
          if(ierr /= 0) then
            write(6,'(/a,3i4)') 'oncvpsp-387: lschfb convergence ERROR n,l,iter=', &
 &           na(ii),la(ii),it
@@ -418,7 +421,7 @@
        end if
 
        call wellstate(npa(iprj,l1),ll,irc(l1),epa(iprj,l1),rr, &
-&                     vfull,uu,up,zz,mmax,mch,srel)
+&                     vfull,uu,up,zz,mmax,mch,srel,eps_vacuum)
        uua(:,iprj)=uu(:)
        upa(:,iprj)=up(:)
      end do !kk
@@ -478,7 +481,7 @@
    ll=la(nc+kk)
    l1=ll+1
    call lschfb(na(nc+kk),ll,ierr,et, &
-&                rr,vfull,uu,up,zz,mmax,mch,srel)
+&                rr,vfull,uu,up,zz,mmax,mch,srel, eps_vacuum)
    if(ierr /= 0) then
      write(6,'(/a,3i4)') 'oncvpsp-461: lschfb convergence ERROR n,l,iter=', &
 &     na(ii),la(ii),it
@@ -494,7 +497,7 @@
 
    call lschvkbb(ll+nodes(l1)+1,ll,nproj(l1),ierr,et,emin,emax, &
 &                rr,vp(1,lloc+1),vkb(1,1,l1),evkb(1,l1), &
-&                uu,up,mmax,mch)
+&                uu,up,mmax,mch,1.0d0)
 
    if(ierr/=0) then 
      write(6,'(a,3i4)') 'oncvpsp: lschvkbb ERROR',ll+nodes(l1)+1,ll,ierr
@@ -523,7 +526,7 @@
 
  if(icmod==1) then
    call modcore(icmod,rhops,rho,rhoc,rhoae,rhotae,rhomod, &
-&               fcfact,rcfact,irps,mmax,rr,nc,nv,la,zion,iexc)
+&               fcfact,rcfact,irps,mmax,rr,nc,nv,la,zion,iexc,eps_vacuum)
 
  else if(icmod==2) then
    call modcore2(icmod,rhops,rho,rhoc,rhoae,rhotae,rhomod, &
@@ -531,13 +534,13 @@
 
  else if(icmod>=3) then
    call modcore3(icmod,rhops,rho,rhoc,rhoae,rhotae,rhomod, &
-&               fcfact,rcfact,irps,mmax,rr,nc,nv,la,zion,iexc)
+&               fcfact,rcfact,irps,mmax,rr,nc,nv,la,zion,iexc,eps_vacuum)
 
  end if
 
 ! screening potential for pseudocharge
 
- call vout(1,rho,rhomod(1,1),vo,vxc,zval,eeel,eexc,rr,mmax,iexc)
+ call vout(1,rho,rhomod(1,1),vo,vxc,zval,eeel,eexc,rr,mmax,iexc, eps_vacuum)
 
 ! total energy output
 
@@ -545,7 +548,7 @@
  write(6,'(/a,f12.6/)') 'Pseudoatom total energy', epstot
 
  call run_diag(lmax,npa,epa,lloc,irc, &
-&                    vkb,evkb,nproj,rr,vfull,vp,zz,mmax,mxprj,srel)
+&                    vkb,evkb,nproj,rr,vfull,vp,zz,mmax,mxprj,srel,eps_vacuum)
 
  call run_ghosts(lmax,la,ea,nc,nv,lloc,irc,qmsbf, &
 &                    vkb,evkb,nproj,rr,vp,mmax,mxprj)
@@ -583,13 +586,13 @@
 
    call run_config(jj,nacnf,lacnf,facnf,nc,nvcnf,rhot,rhomod,rr,zz, &
 &                  rcmax,mmax,mxprj,iexc,ea,etot,epstot,nproj,vpuns, &
-&                  lloc,vkb,evkb,srel)
+&                  lloc,vkb,evkb,srel,.true.)
 
  end do !jj
 
  call run_plot(lmax,npa,epa,lloc,irc, &
 &                    vkb,evkb,nproj,rr,vfull,vp,vpuns,zz,mmax,mxprj,drl,nrl, &
-&                    rho,rhoc,rhomod,srel,cvgplt)
+&                    rho,rhoc,rhomod,srel,cvgplt,eps_vacuum)
 
 
 

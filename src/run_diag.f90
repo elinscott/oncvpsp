@@ -17,7 +17,7 @@
 ! along with this program.  If not, see <http://www.gnu.org/licenses/>.
 !
  subroutine run_diag(lmax,npa,epa,lloc,irc, &
-&                    vkb,evkb,nproj,rr,vfull,vp,zz,mmax,mxprj,srel)
+&                    vkb,evkb,nproj,rr,vfull,vp,zz,mmax,mxprj,srel, eps)
 
 !diagnostics for semi-local and Vanderbilt-Kleinman-bylander pseudopotentials
 !checks bound-state energies, norms, and slopes, and pseudo-bound state
@@ -52,6 +52,7 @@
  real(dp) :: rr(mmax),vp(mmax,5),vfull(mmax),vkb(mmax,mxprj,4)
  real(dp):: epa(mxprj,6),evkb(mxprj,4)
  logical :: srel
+ real(dp) :: eps(mmax)
 
 !Output variables - printing only
 
@@ -86,7 +87,7 @@
     etest=epa(iprj,l1)
     if(etest<0.0d0) then
       call lschfb(npa(iprj,l1),ll,ierr,etest, &
-&                rr,vfull,uu,up,zz,mmax,mch,srel)
+&                rr,vfull,uu,up,zz,mmax,mch,srel,eps)
       if(ierr .ne. 0) then
          write(6,'(/a,3i4)') 'run_diag: lschfb convergence ERROR n,l,ierr=', &
 &        npa(iprj,l1),ll,ierr
@@ -95,7 +96,7 @@
 
     else
       call lschfs(nnae,ll,ierr,etest, &
-&               rr,vfull,uu,up,zz,mmax,mchf,srel)
+&               rr,vfull,uu,up,zz,mmax,mchf,srel,eps)
     end if
 
     umch=uu(mchf)
@@ -117,7 +118,7 @@
 
       call lschvkbb(ll+iprj,ll,npr,ierr,etest,emin,emax, &
 &                   rr,vp(1,lloc+1),vkb(1,1,l1),evkb(1,l1), &
-&                   uu,up,mmax,mch)
+&                   uu,up,mmax,mch,eps)
       if(ierr/=0) then
         write(6,'(a,3i4,1p,2e16.8)') 'run_diag: lschvkbb ERROR', &
 &             iprj,ll,ierr,epa(iprj,l1),etest
@@ -130,7 +131,7 @@
       nnp=nnae-npa(1,l1)+ll+1
       call lschvkbbe(nnp,ll,npr,ierr,etest,uldf,emin,emax, &
 &                   rr,vp(1,lloc+1),vkb(1,1,l1),evkb(1,l1), &
-&                   uu,up,mmax,mchf)
+&                   uu,up,mmax,mchf,eps)
 
       if(ierr/=0) then
         write(6,'(a,4i4,1p,2e16.8)') 'run_diag: lschvkbbe ERROR', &
