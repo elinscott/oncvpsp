@@ -1,7 +1,9 @@
 ! Function that defines an external confining potential that can be deployed in order to reduce
 ! the spread of weakly-bound (or even initially unbound) states
 
-function vconfining(rho, height)
+! The confining potential is set to zero as r -> infinity
+
+function vconfining(rho, depth)
 
    implicit none
 
@@ -9,7 +11,7 @@ function vconfining(rho, height)
 
    ! Arguments
    real(dp), allocatable :: rho(:) ! The total density of the system
-   real(dp) :: height ! The height of the confining potential
+   real(dp) :: depth ! The depth of the confining potential
 
    ! Returns
    real(dp), allocatable :: vconfining(:) ! The confining potential
@@ -25,7 +27,7 @@ function vconfining(rho, height)
    allocate(vconfining(mmax))
 
    do ii = 1, mmax
-      vconfining(ii) = 0.5_dp * height * (1 + (1 - (rho(ii)/rho_cutoff)**(2*beta))/(1 + (rho(ii)/rho_cutoff)**(2*beta)))
+      vconfining(ii) = 0.5_dp * depth * ((1 - (rho(ii)/rho_cutoff)**(2*beta))/(1 + (rho(ii)/rho_cutoff)**(2*beta)) - 1)
    end do
 
 end function vconfining
