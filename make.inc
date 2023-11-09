@@ -20,8 +20,8 @@ FCCPPFLAGS = -ansi -DLIBXC_VERSION=221  #Use this for versions <301
 
 # FFLAGS     = -O3 -funroll-loops -check all -warn interfaces
 FFLAGS     = -O3 -funroll-loops -traceback -g
-CFLAGS     = -O3 -I/home/elinscott/code/libxc-2.2.1/src
-FCCPPFLAGS     = -O3 -I/home/elinscott/code/libxc-2.2.1/src
+CFLAGS     = -O3 -I/home/linsco_e/code/libxc-2.2.1/src
+FCCPPFLAGS     = -O3 -I/home/linsco_e/code/libxc-2.2.1/src
 
 ##### Edit the following LAPACK and BLAS library paths for your system ####
 
@@ -36,8 +36,8 @@ OBJS_LIBXC =	exc_libxc_stub.o
 # the paths to point to your libxc library and include directories
 # make clean in src before rebuilding after changing this
 
-LIBS += -L/usr/local/lib -L/home/elinscott/code/libxc-2.2.1/src/.libs/ -L/home/elinscott/code/libxc-2.2.1/src/ -lxcf90 -lxc
-FFLAGS += -I/usr/local/include/ -I/home/elinscott/code/libxc-2.2.1/src/
+LIBS += -L/usr/local/lib -L/home/linsco_e/code/libxc-2.2.1/src/.libs/ -L/home/linsco_e/code/libxc-2.2.1/src/ -lxcf90 -lxc
+FFLAGS += -I/usr/local/include/ -I/home/linsco_e/code/libxc-2.2.1/src/
 
 #LIBS += -L/home/drh/abinit/fallbacks/exports/lib -lxcf90 -lxc
 #FFLAGS += -I/home/drh/abinit/fallbacks/exports/include
