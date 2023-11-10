@@ -38,7 +38,7 @@
 !
  integer :: ii,ierr,iexc,iexct,ios,iprint,irps,it,icmod,lpopt
  integer :: jj,kk,ll,l1,lloc,lmax,lt,inline
- integer :: mch,mchf,mmax,n1,n2,nc,nlim,nlloc,nlmax,irpsh,nrl
+ integer :: mch,mchf,mch_max,mmax,n1,n2,nc,nlim,nlloc,nlmax,irpsh,nrl
  integer :: nv,irct,ncnf,nvt
  integer :: iprj,mxprj
  integer,allocatable :: npa(:,:)
@@ -75,12 +75,23 @@
  real(dp), allocatable :: vp(:,:),vfull(:),vkb(:,:,:),pswf(:,:,:)
  real(dp), allocatable :: vwell(:)
  real(dp), allocatable :: vpuns(:,:)
+ real(dp), allocatable :: vconf(:)
  real(dp), allocatable :: vo(:),vxc(:)
  real(dp), allocatable :: rhomod(:,:),rhoae(:,:),rhops(:,:),rhotae(:)
  real(dp), allocatable :: uupsa(:,:) !pseudo-atomic orbitals array
  real(dp), allocatable :: epa(:,:),fpa(:,:)
  real(dp), allocatable :: uua(:,:),upa(:,:)
  real(dp), allocatable :: vr(:,:,:)
+
+ interface
+    function vconfining(rho, rho0, depth)
+       implicit none
+       integer, parameter :: dp = kind(1.0d0)
+       real(dp), allocatable :: rho(:)
+       real(dp) :: rho0, depth
+       real(dp), allocatable :: vconfining(:)
+    end function
+ end interface
 
  character*2 :: atsym
  character*4 :: psfile
@@ -237,6 +248,7 @@
  allocate(vp(mmax,5),vfull(mmax),vkb(mmax,mxprj,4),pswf(mmax,mxprj,4))
  allocate(vwell(mmax))
  allocate(vpuns(mmax,5))
+ allocate(vconf(mmax))
  allocate(vo(mmax),vxc(mmax))
  allocate(rhoae(mmax,nv),rhops(mmax,nv),rhotae(mmax))
  allocate(npa(mxprj,6))
@@ -366,6 +378,7 @@
 !temporarily set this to 1 so that the pseudo wave function needed for the
 !local potential will be generated.  Reset after run_vkb.
  nproj(lloc+1)=1
+ mch_max = 0
  do l1=1,lmax+1
    ll=l1-1
    uu(:)=0.0d0; qq(:,:)=0.0d0
@@ -390,6 +403,7 @@
 &           na(ii),la(ii),it
            stop
          end if
+         if (mch > mch_max) mch_max = mch
          epa(iprj,l1)=ea(kk)
          npa(iprj,l1)=na(kk)
          uua(:,iprj)=uu(:)
@@ -573,6 +587,16 @@
 
 !ncnf=0
  rhot(:)=rho(:)
+
+ ! Construct a confining potential based off the mch for the reference configuration
+ vconf(:) = vconfining(rho, rho(mch_max), 20.0_dp)
+
+ open(50, file='confining_potential.dat', status='unknown')
+ do ii = 1, mmax
+  write(50, '(3f16.8)') rr(ii), rho(ii), vconf(ii)
+ end do
+ close(50)
+
  do jj=1,ncnf+1
 
    write(6,'(/a,i2)') 'Test configuration',jj-1
@@ -583,7 +607,7 @@
 
    call run_config(jj,nacnf,lacnf,facnf,nc,nvcnf,rhot,rhomod,rr,zz, &
 &                  rcmax,mmax,mxprj,iexc,ea,etot,epstot,nproj,vpuns, &
-&                  lloc,vkb,evkb,srel)
+&                  lloc,vkb,evkb,vconf,srel)
 
  end do !jj
 

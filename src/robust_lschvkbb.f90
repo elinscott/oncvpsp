@@ -19,7 +19,7 @@
 subroutine robust_lschvkbb(nn, ll, nvkb, ierr, ee, &
                            & rr, vloc, vkb, evkb, uu, up, mmax, mch)
 
-! Finds bound states of a  pseudopotential with
+! Finds bound states of a pseudopotential with
 ! Vanderbilt-Kleinman-Bylander non-local projectors
 
 !nn  principal quantum number
@@ -88,9 +88,9 @@ subroutine robust_lschvkbb(nn, ll, nvkb, ierr, ee, &
    e_upper = 0.0_dp
 
 ! return point for bound state convergence
-   do nint = 1, 100
+   do nint = 1, 1000
 
-      ! write(*, '(3f12.6)', advance='no') ee, e_lower, e_upper
+      write(*, '(3f18.12)', advance='no') ee, e_lower, e_upper
 
 ! coefficient array for u in differential eq.
       do ii = 1, mmax
@@ -141,6 +141,12 @@ subroutine robust_lschvkbb(nn, ll, nvkb, ierr, ee, &
       uout = uu(mch)
       upout = up(mch)
 
+      ! open(unit=100 + nint, status='old')
+      ! close(100 + nint, status='delete')
+      ! do ii = 1, mch
+      !    write(100 + nint, '(2f18.12)') rr(ii), uu(ii)
+      ! end do
+
       if (node - nn + ll + 1 == 0) then
 
 ! start inward integration at 10*classical turning
@@ -176,6 +182,10 @@ subroutine robust_lschvkbb(nn, ll, nvkb, ierr, ee, &
             up(ii) = sc*up(ii)
             uu(ii) = sc*uu(ii)
          end do
+
+         ! do ii = mch, nin
+         !    write(100 + nint, '(2f18.12)') rr(ii), uu(ii)
+         ! end do
 
          upin = up(mch)
 
@@ -215,18 +225,18 @@ subroutine robust_lschvkbb(nn, ll, nvkb, ierr, ee, &
 
          if (dabs(de) < dmax1(dabs(ee), 0.2d0)*eps) then
             ierr = 0
-            ! write(*, *) 'converged'
+            write(*, '(a)') ' converged'
             exit
          end if
 
          if (de > 0.0d0) then
             ! ee is too low
-            ! write(*, *) 'ee is too low; increasing by de'
+            write(*, '(a)') ' 2 ee is too low (de > 0); increasing by de'
             e_lower = ee
             e_lower_found = .true.
          else
             ! ee is too high
-            ! write(*, *) 'ee is too high; decreasing by de'
+            write(*, '(a)') ' 3 ee is too high (de < 0); decreasing by de'
             e_upper = ee
          end if
 
@@ -247,13 +257,13 @@ subroutine robust_lschvkbb(nn, ll, nvkb, ierr, ee, &
 
       else if (node - nn + ll + 1 < 0) then
          ! too few nodes; ee is too low
-         ! write(*, *) 'ee is too low; increasing'
+         write(*, '(a)') ' 1 ee is too low (too few nodes); increasing'
          e_lower_found = .true.
          e_lower = ee
          ee = 0.5_dp * (ee + e_upper)
       else
          ! too many nodes; ee is too high
-         ! write(*, *) 'ee is too high; decreasing'
+         write(*, '(a)') ' 4 ee is too high (too few nodes); decreasing'
          e_upper = ee
          if (e_lower_found) then
             ee = 0.5_dp * (e_upper + e_lower)
@@ -271,6 +281,8 @@ subroutine robust_lschvkbb(nn, ll, nvkb, ierr, ee, &
    end if
 
    deallocate (upp, cf)
+
+   if (ierr /= 0) stop
    return
 
 end subroutine robust_lschvkbb

@@ -123,7 +123,7 @@ subroutine psatom(na, la, ea, fat, nv, it, rhoc, rho, &
 ! big self  self-consietency loop
    do it = 1, 100
 
-! convergence is only to be considered if we are fully in  the target
+! convergence is only to be considered if we are fully in the target
 ! configurtion
 
       if (it > 2) then
@@ -243,6 +243,18 @@ subroutine psatom(na, la, ea, fat, nv, it, rhoc, rho, &
    ! Plotting
    if (plot) then
       open(20, file='paos' // label // '.dat', status='unknown')
+
+      ! Header
+      write(20, '(a6,a10,a16)', advance='no') '# PAOs', 'r', 'rho'
+      do kk = 1, nv
+         write(20, '(a15,i1)', advance='no') 'psi', kk
+      end do
+      do kk = 1, 5
+         write(20, '(a14,i1,a)', advance='no') 'v(l=', kk, ')'
+      end do
+      write(20, '()')
+
+      ! Content
       do ii = 1, mmax
          write(20, '(2f16.8)', advance='no') rr(ii), rho(ii)
          do kk = 1, nv

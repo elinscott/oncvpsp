@@ -21,7 +21,7 @@
 
 subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, &
                          & rcmax, mmax, mxprj, iexc, ea, etot, epstot, nproj, vpuns, &
-                         & lloc, vkb, evkb, srel)
+                         & lloc, vkb, evkb, vconf, srel)
 
    !jj  index of current configufation
    !nacnf  principal quantum number array, all configurations
@@ -55,13 +55,13 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
    integer :: nacnf(30, 5), lacnf(30, 5), nvcnf(5), nproj(5)
    real(dp) :: etot, epstot, rcmax, zz
    real(dp) :: facnf(30, 5), ea(30), rhov(mmax), rr(mmax)
-   real(dp) :: vpuns(mmax, 5), vkb(mmax, mxprj, 4), evkb(mxprj, 4), rhomod(mmax, 5)
+   real(dp) :: vpuns(mmax, 5), vkb(mmax, mxprj, 4), evkb(mxprj, 4), rhomod(mmax, 5), vconf(mmax)
    logical :: srel
 
 !Output variables  only printing
 
 !Local variables
-   integer :: ii, it, kk, l1, ierr, mch, nvt
+   integer :: ii, it, kk, l1, ierr, mch, nvt, max_mch
    integer :: nat(30), lat(30), natp(30), latp(30), nav(4)
    integer ::  indxr(30), indxe(30)
    real(dp) :: et, eaetst, etsttot, zval
@@ -74,22 +74,12 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
    ! Confining potential procedure
    integer :: niter_conf, i_conf
    real(dp) :: conf_height
-   real(dp), allocatable :: v_conf(:), vpuns_confined(:, :)
-   character(len=24) :: label
-
-   interface
-      function vconfining(rho, conf_height)
-         implicit none
-         integer, parameter :: dp = kind(1.0d0)
-         real(dp) :: conf_height
-         real(dp), allocatable :: rho(:)
-         real(dp), allocatable :: vconfining(:)
-      end function
-   end interface
+   real(dp), allocatable :: vpuns_confined(:, :)
+   character(len=10) :: label
 
    allocate (rho(mmax), rhoc(mmax), vi(mmax), vfull(mmax), rhocps(mmax))
    allocate (uu(mmax), up(mmax))
-   allocate(v_conf(mmax), vpuns_confined(mmax, 5))
+   allocate(vpuns_confined(mmax, 5))
 
 ! atom tests comparing reference state and excited configuration for
 ! all-electron and pseudo atoms.  Total excitation energies and excited-
@@ -183,7 +173,7 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
       else
          write (6, '(a)') 'run_config: WARNING self-consistency failed to converge'
       end if
-      deallocate (rho, rhoc, rhocps, vi, vfull, v_conf, vpuns_confined)
+      deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
       deallocate (uu, up)
       return
    end if
@@ -199,7 +189,7 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
             write (6, '(/a,3i4)') &
      &            'runconfig: WARNING lschfb convergence ERROR n,l,iter=', &
      &            nat(kk), lat(kk), it
-            deallocate (rho, rhoc, rhocps, vi, vfull, v_conf, vpuns_confined)
+            deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
             deallocate (uu, up)
             return
          end if
@@ -222,7 +212,7 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
       else
          write (6, '(a)') 'run_config: WARNING self-consistency failed to converge'
       end if
-      deallocate (rho, rhoc, rhocps, vi, vfull, v_conf, vpuns_confined)
+      deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
       deallocate (uu, up)
       return
    end if
@@ -254,7 +244,7 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
       write (6, '(a,a/a,i2)') 'run_config: WARNING for fully non-local PS atom,', &
     &       ' stg. 1', &
     &       ' WARNING no output for configuration', jj
-      deallocate (rho, rhoc, rhocps, vi, vfull, v_conf, vpuns_confined)
+      deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
       return
    end if
 
@@ -274,29 +264,30 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
       write (6, '(a,a/a,i2)') 'run_config: WARNING for fully non-local PS atom,', &
     &       ' stg. 2', &
     &       ' WARNING no output for configuration', jj
-      deallocate (rho, rhoc, rhocps, vi, vfull, v_conf, vpuns_confined)
+      deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
       return
    end if
 
    ! Confining potential
    conf_height = 20.0_dp
-   niter_conf = 20
+   niter_conf = 1
    vpuns_confined(:, :) = vpuns(:, :)
-   v_conf(:) = vconfining(rho, conf_height / niter_conf)
-   do i_conf = 1, niter_conf
-      do ii = 1, mmax
-         do kk = 1, 5
-            vpuns_confined(ii, kk) = vpuns_confined(ii, kk) + v_conf(ii)
-         end do
-         write(50, *) rr(ii), v_conf(ii)
-      end do
-
-      write(label, '(a,i0.2,a,i0.3)') '_config_', jj - 1, '_iteration_', i_conf
-         
-      call psatom(natp, latp, eatp, fatp, nvt, it, rhocps, rho, &
-                  & rr, rcmax, mmax, mxprj, iexc, etsttot, nproj, vpuns_confined, lloc, &
-                  & vkb, evkb, .true., .true., label, ierr)
+   do ii = 1, nvt
+      eatp(ii) = eatp(ii) + vconf(1)
    end do
+
+   write(*, '(a,i)') '  Confining potential'
+   do ii = 1, mmax
+      do kk = 1, 5
+         vpuns_confined(ii, kk) = vpuns_confined(ii, kk) + vconf(ii)
+      end do
+   end do
+
+   write(label, '(a,i0.2)') '_config_', jj - 1
+      
+   call psatom(natp, latp, eatp, fatp, nvt, it, rhocps, rho, &
+               & rr, rcmax, mmax, mxprj, iexc, etsttot, nproj, vpuns_confined, lloc, &
+               & vkb, evkb, .true., .true., label, ierr)
 
    write (6, '(/a)') '   n   l     f        eae           eps        diff'
    do ii = 1, nc
@@ -316,7 +307,7 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
    write (6, '(a,1p,d10.2)'), '      PSP excitation error=', &
   & eaetst - etot - etsttot + epstot
 
-   deallocate (rho, rhoc, rhocps, vi, vfull, v_conf, vpuns_confined)
+   deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
    deallocate (uu, up)
    return
 end subroutine run_config
