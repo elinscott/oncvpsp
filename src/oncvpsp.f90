@@ -36,7 +36,7 @@
  integer, parameter :: dp=kind(1.0d0)
 
 !
- integer :: ii,ierr,iexc,iexct,ios,iprint,irps,it,icmod,lpopt
+ integer :: ii,ierr,iexc,iexct,ios,iprint,irps,it,icmod,lpopt,istep
  integer :: jj,kk,ll,l1,lloc,lmax,lt,inline
  integer :: mch,mchf,mch_max,mmax,n1,n2,nc,nlim,nlloc,nlmax,irpsh,nrl
  integer :: nv,irct,ncnf,nvt
@@ -58,6 +58,7 @@
  real(dp) :: rr1,rcion,rciont,rcmax,rct,rlmax,rpkt
  real(dp) :: sf,zz,zion,zval,etot
  real(dp) :: xdummy
+ real(dp) :: beta,depth,rfact
 !
  real(dp) :: cl(6),debl(6),ea(30),ep(6),fa(30),facnf(30,5)
  real(dp) :: fat(30,2)
@@ -76,6 +77,7 @@
  real(dp), allocatable :: vwell(:)
  real(dp), allocatable :: vpuns(:,:)
  real(dp), allocatable :: vconf(:)
+ character(len=100) :: vconf_filename
  real(dp), allocatable :: vo(:),vxc(:)
  real(dp), allocatable :: rhomod(:,:),rhoae(:,:),rhops(:,:),rhotae(:)
  real(dp), allocatable :: uupsa(:,:) !pseudo-atomic orbitals array
@@ -84,12 +86,32 @@
  real(dp), allocatable :: vr(:,:,:)
 
  interface
-    function vconfining(rho, rho0, depth)
+    function vconfining(rho, rho0, depth, beta)
        implicit none
        integer, parameter :: dp = kind(1.0d0)
        real(dp), allocatable :: rho(:)
-       real(dp) :: rho0, depth
+       real(dp) :: rho0, depth, beta
        real(dp), allocatable :: vconfining(:)
+    end function
+ end interface
+
+ interface
+    function vtanh(rr, rc, depth, beta)
+       implicit none
+       integer, parameter :: dp = kind(1.0d0)
+       real(dp), allocatable :: rr(:)
+       real(dp) :: rc, depth, beta
+       real(dp), allocatable :: vtanh(:)
+    end function
+ end interface
+
+ interface
+    function vtanhlog(rr, rc, depth, beta)
+       implicit none
+       integer, parameter :: dp = kind(1.0d0)
+       real(dp), allocatable :: rr(:)
+       real(dp) :: rc, depth, beta
+       real(dp), allocatable :: vtanhlog(:)
     end function
  end interface
 
@@ -176,7 +198,7 @@
 
 ! test configurations
  call cmtskp(inline)
- read(5,*,iostat=ios) ncnf
+ read(5,*,iostat=ios) ncnf, depth, beta, rfact
  call read_error(ios,inline)
 
  do jj=2,ncnf+1
@@ -589,11 +611,31 @@
  rhot(:)=rho(:)
 
  ! Construct a confining potential based off the mch for the reference configuration
- vconf(:) = vconfining(rho, rho(mch_max), 20.0_dp)
+ istep = mch_max + int(rfact / al) ! Turn on the smooth step potential at 1.5 * r(mch_max)
+ ! vconf(:) = vconfining(rho, rho(istep), depth, beta)
 
- open(50, file='confining_potential.dat', status='unknown')
+ ! write(vconf_filename, '(a,f4.1,a,f3.1,a,f3.1,a)') 'confining_potential_', depth, '_', beta, '_', rfact, '.dat'
+ ! open(50, file=trim(adjustl(vconf_filename)), status='unknown')
+ ! do ii = 1, mmax
+ !  write(50, '(3f16.8)') rr(ii), vconf(ii)
+ ! end do
+ ! close(50)
+
+ ! vconf(:) = vtanh(rr, rr(istep), depth, beta)
+
+ ! write(vconf_filename, '(a,f4.1,a,f3.1,a,f3.1,a)') 'vtanh_potential_', depth, '_', beta, '_', rfact, '.dat'
+ ! open(50, file=trim(adjustl(vconf_filename)), status='unknown')
+ ! do ii = 1, mmax
+ !  write(50, '(3f16.8)') rr(ii), vconf(ii)
+ ! end do
+ ! close(50)
+
+ vconf(:) = vtanhlog(rr, rr(istep), depth, beta)
+
+ write(vconf_filename, '(a,f4.1,a,f3.1,a,f3.1,a)') 'vtanhlog_potential_', depth, '_', beta, '_', rfact, '.dat'
+ open(50, file=trim(adjustl(vconf_filename)), status='unknown')
  do ii = 1, mmax
-  write(50, '(3f16.8)') rr(ii), rho(ii), vconf(ii)
+  write(50, '(3f16.8)') rr(ii), vconf(ii)
  end do
  close(50)
 
@@ -605,9 +647,9 @@
 
    rhot(:)=rho(:)
 
-   call run_config(jj,nacnf,lacnf,facnf,nc,nvcnf,rhot,rhomod,rr,zz, &
+   call run_config_ps_only(jj,nacnf,lacnf,facnf,nc,nvcnf,rhot,rhomod,rr,zz, &
 &                  rcmax,mmax,mxprj,iexc,ea,etot,epstot,nproj,vpuns, &
-&                  lloc,vkb,evkb,vconf,srel)
+&                  lloc,vkb,evkb,vconf,srel,istep)
 
  end do !jj
 

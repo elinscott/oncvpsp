@@ -53,8 +53,8 @@ real(dp) :: rc,rn
 
  integer ii,jj,kk,ierr,info
 
- uu(:)=0.0d0
- up(:)=0.0d0
+ uu(1:mch)=0.0d0
+ up(1:mch)=0.0d0
 
 ! homogeneous solution
  call lschps(ll+1,ll,ierr,ep,rr,vloc,uu,up,mmax,mch)
@@ -117,7 +117,8 @@ real(dp) :: rc,rn
  end if
 
 ! lower cutoff for node counting to avoid small-r noise
- rn=dmax1(0.10d0*rc, 0.05d0)
+ ! rn=dmax1(0.10d0*rc, 0.05d0)
+ rn = 0.005d0
 
  node=0
  do ii=6,mch

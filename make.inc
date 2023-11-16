@@ -19,7 +19,8 @@ FCCPPFLAGS = -ansi -DLIBXC_VERSION=221  #Use this for versions <301
 ##### Edit the following optimization flags for your system ####
 
 # FFLAGS     = -O3 -funroll-loops -check all -warn interfaces
-FFLAGS     = -O3 -funroll-loops -traceback -g
+# FFLAGS     = -O3 -funroll-loops -traceback -g
+FFLAGS     = -O0 -funroll-loops -traceback -g -warn all -check all
 CFLAGS     = -O3 -I/home/linsco_e/code/libxc-2.2.1/src
 FCCPPFLAGS     = -O3 -I/home/linsco_e/code/libxc-2.2.1/src
 

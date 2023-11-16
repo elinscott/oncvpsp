@@ -3,7 +3,7 @@
 
 ! The confining potential is set to zero as r -> infinity
 
-function vconfining(rho, rho0, depth)
+function vconfining(rho, rho0, depth, beta)
 
    implicit none
 
@@ -13,6 +13,7 @@ function vconfining(rho, rho0, depth)
    real(dp), allocatable :: rho(:) ! The total density of the system
    real(dp) :: rho0 ! The density below which the confining potential is applied
    real(dp) :: depth ! The depth of the confining potential
+   real(dp) :: beta ! A parameter that affects the smoothness of the confining potential
 
    ! Returns
    real(dp), allocatable :: vconfining(:) ! The confining potential
@@ -21,7 +22,6 @@ function vconfining(rho, rho0, depth)
    integer :: ii
    integer :: mmax
    real(dp) :: rho_max
-   real(dp), parameter :: beta = 1.3_dp ! A parameter that affects the smoothness of the confining potential
 
    mmax = size(rho)
 
@@ -33,5 +33,7 @@ function vconfining(rho, rho0, depth)
       if (rho(ii) > rho_max) rho_max = rho(ii)
       vconfining(ii) = 0.5_dp * depth * ((1 - (rho_max/rho0)**(2*beta))/(1 + (rho_max/rho0)**(2*beta)) - 1)
    end do
+
+
 
 end function vconfining

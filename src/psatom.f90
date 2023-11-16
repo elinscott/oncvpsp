@@ -19,7 +19,7 @@
 ! self-consistent pseudoatom calculation
 
 subroutine psatom(na, la, ea, fat, nv, it, rhoc, rho, &
-                  & rr, rcmax, mmax, mxprj, iexc, etot, nproj, vpuns, lloc, vkb, evkb, plot, robust, label, ierr)
+                  & rr, rcmax, mmax, mxprj, iexc, etot, nproj, vpuns, lloc, vkb, evkb, plot, robust, label, istep, ierr)
 
 !na  principal quantum number array, dimension nv
 !la  angular-momenta
@@ -53,6 +53,7 @@ subroutine psatom(na, la, ea, fat, nv, it, rhoc, rho, &
    real(dp) :: vpuns(mmax, 5), vkb(mmax, mxprj, 4), evkb(mxprj, 4)
    logical :: plot
    character(len=*) :: label
+   integer :: istep
    logical :: robust
 
 !Output variables
@@ -67,7 +68,7 @@ subroutine psatom(na, la, ea, fat, nv, it, rhoc, rho, &
    real(dp) :: dr, eeel, eexc, et, emin, emax, rl, rl1, sd, sn, sls, eeig
    real(dp) :: thl, vn, zval, dfa
    real(dp) :: fa(30)
-   integer :: ii, jj, l1, ierr, icx, nprj, kk
+   integer :: ii, jj, l1, ierr, icx, nprj, kk, lextra, nextra_nodes
    logical :: convg
 
    real(dp), allocatable :: uua(:, :)
@@ -122,6 +123,7 @@ subroutine psatom(na, la, ea, fat, nv, it, rhoc, rho, &
 
 ! big self  self-consietency loop
    do it = 1, 100
+      write(*, *) 'psatom iteration step ', it
 
 ! convergence is only to be considered if we are fully in the target
 ! configurtion
@@ -152,8 +154,14 @@ subroutine psatom(na, la, ea, fat, nv, it, rhoc, rho, &
          emin = 1.10d0*ea(ii)
          emax = 0.90d0*ea(ii)
          if (robust) then
-            call robust_lschvkbb(na(ii), la(ii), nproj(l1), ierr, et, &
-    &                    rr, vtot, vkb(1, 1, l1), evkb(1, l1), uua(:, ii), up, mmax, mch)
+            do nextra_nodes = 0, 3
+               write(*, '(a,i1,a)') 'Looking for a solution with ', na(ii) - la(ii) - 1 + nextra_nodes, ' nodes'
+               call robust_lschvkbb(na(ii), la(ii), nproj(l1), ierr, et, &
+    &                       rr, vtot, vkb(1, 1, l1), evkb(1, l1), uua(:, ii), up, mmax, mch, istep, nextra_nodes)
+               if (ierr == 0) then
+                  exit
+               end if
+            end do
          else
             call lschvkbb(na(ii), la(ii), nproj(l1), ierr, et, emin, emax, &
     &                    rr, vtot, vkb(1, 1, l1), evkb(1, l1), uua(:, ii), up, mmax, mch)
@@ -243,26 +251,31 @@ subroutine psatom(na, la, ea, fat, nv, it, rhoc, rho, &
    ! Plotting
    if (plot) then
       open(20, file='paos' // label // '.dat', status='unknown')
+      ! Header
+      write(20, '(2i)') mmax, nv
+      do kk = 1, nv
+         write(20, '(i2)', advance='no') la(kk)
+      end do
 
       ! Header
-      write(20, '(a6,a10,a16)', advance='no') '# PAOs', 'r', 'rho'
-      do kk = 1, nv
-         write(20, '(a15,i1)', advance='no') 'psi', kk
-      end do
-      do kk = 1, 5
-         write(20, '(a14,i1,a)', advance='no') 'v(l=', kk, ')'
-      end do
+      ! write(20, '(a6,a10,a16)', advance='no') '# PAOs', 'r', 'rho'
+      ! do kk = 1, nv
+      !    write(20, '(a15,i1)', advance='no') 'psi', kk
+      ! end do
+      ! do kk = 1, 5
+      !    write(20, '(a14,i1,a)', advance='no') 'v(l=', kk, ')'
+      ! end do
       write(20, '()')
 
       ! Content
       do ii = 1, mmax
-         write(20, '(2f16.8)', advance='no') rr(ii), rho(ii)
+         write(20, '(2f20.15)', advance='no') log(rr(ii)), rr(ii)
          do kk = 1, nv
-            write(20, '(f16.8)', advance='no') uua(ii, kk)
+            write(20, '(f20.15)', advance='no') uua(ii, kk)
          end do
-         do kk = 1, 5
-            write(20, '(f16.8)', advance='no') vpuns(ii, kk)
-         end do
+         ! do kk = 1, 5
+         !    write(20, '(f16.8)', advance='no') vpuns(ii, kk)
+         ! end do
          write(20, '()')
       end do
       close(20)

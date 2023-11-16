@@ -68,9 +68,9 @@
 
 ! null arrays to remove leftover garbage
 
- uu(:)=0.0d0
- up(:)=0.0d0
- upp(:)=0.0d0
+ uu(1:mch)=0.0d0
+ up(1:mch)=0.0d0
+ upp(1:mch)=0.0d0
 
  als=al**2
 
@@ -126,9 +126,9 @@
    up(ii)=cn*up(ii)
    uu(ii)=cn*uu(ii)
  end do
- do ii=mch+1,mmax
-   uu(ii)=0.0d0
- end do
+ ! do ii=mch+1,mmax
+ !   uu(ii)=0.0d0
+ ! end do
 
  deallocate(upp,cf)
 

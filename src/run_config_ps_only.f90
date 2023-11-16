@@ -19,7 +19,7 @@
 ! self-consistent all-electron and pseudopotential atomic calculations
 ! compared for reference and tests atomic configurations
 
-subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, &
+subroutine run_config_ps_only(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, &
                          & rcmax, mmax, mxprj, iexc, ea, etot, epstot, nproj, vpuns, &
                          & lloc, vkb, evkb, vconf, srel,istep)
 
@@ -164,59 +164,59 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
 
 !all-electron atom solution for maximally-ionized state
 
-   call sratom(nat, lat, eat(1, 2), fat(1, 2), rpk, nc, nc + nvt, it, rhoc, rho, &
-  &            rr, vfull, zz, mmax, iexc, eaetst, ierr, srel)
-   if (ierr /= 0) then
-      write (6, '(a/a,i2)') 'run_config: WARNING  for AE atom,', &
-    &       ' WARNING no output for configuration', jj
-      if (ierr == -1) then
-         write (6, '(a,i4)') 'no classical turning point error, iteration', it
-      else
-         write (6, '(a)') 'run_config: WARNING self-consistency failed to converge'
-      end if
-      deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
-      deallocate (uu, up)
-      return
-   end if
+!    call sratom(nat, lat, eat(1, 2), fat(1, 2), rpk, nc, nc + nvt, it, rhoc, rho, &
+!   &            rr, vfull, zz, mmax, iexc, eaetst, ierr, srel)
+!    if (ierr /= 0) then
+!       write (6, '(a/a,i2)') 'run_config: WARNING  for AE atom,', &
+!     &       ' WARNING no output for configuration', jj
+!       if (ierr == -1) then
+!          write (6, '(a,i4)') 'no classical turning point error, iteration', it
+!       else
+!          write (6, '(a)') 'run_config: WARNING self-consistency failed to converge'
+!       end if
+!       deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
+!       deallocate (uu, up)
+!       return
+!    end if
 
 !fill in energies for empty levels of maximally ionized state
 
-   do kk = 1, nc + nvt
-      if (eat(kk, 2) == 0.0d0) then
-         et = 0.0d0
-         call robust_lschfb(nat(kk), lat(kk), ierr, et, &
-    &                rr, vfull, uu, up, zz, mmax, mch, srel)
-         if (ierr .ne. 0) then
-            write (6, '(/a,3i4)') &
-     &            'runconfig: WARNING lschfb convergence ERROR n,l,iter=', &
-     &            nat(kk), lat(kk), it
-            deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
-            deallocate (uu, up)
-            return
-         end if
-         eat(kk, 2) = et
-      end if
-   end do
+!    do kk = 1, nc + nvt
+!       if (eat(kk, 2) == 0.0d0) then
+!          et = 0.0d0
+!          call robust_lschfb(nat(kk), lat(kk), ierr, et, &
+!     &                rr, vfull, uu, up, zz, mmax, mch, srel)
+!          if (ierr .ne. 0) then
+!             write (6, '(/a,3i4)') &
+!      &            'runconfig: WARNING lschfb convergence ERROR n,l,iter=', &
+!      &            nat(kk), lat(kk), it
+!             deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
+!             deallocate (uu, up)
+!             return
+!          end if
+!          eat(kk, 2) = et
+!       end if
+!    end do
 
    eat(:, 3) = 0.d0; rpk(:) = 0.d0; rhoc(:) = 0.d0; rho(:) = 0.d0; vfull(:) = 0.d0
    eaetst = 0.d0
 
 !all-electron atom solution for excited state
 
-   call sratom(nat, lat, eat(1, 3), fat(1, 3), rpk, nc, nc + nvt, it, rhoc, rho, &
-  &            rr, vfull, zz, mmax, iexc, eaetst, ierr, srel)
-   if (ierr /= 0) then
-      write (6, '(a/a,i2)') 'run_config: WARNING  for AE atom,', &
-    &       ' WARNING no output for configuration', jj
-      if (ierr == -1) then
-         write (6, '(a,i4)') 'no classical turning point error, iteration', it
-      else
-         write (6, '(a)') 'run_config: WARNING self-consistency failed to converge'
-      end if
-      deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
-      deallocate (uu, up)
-      return
-   end if
+!    call sratom(nat, lat, eat(1, 3), fat(1, 3), rpk, nc, nc + nvt, it, rhoc, rho, &
+!   &            rr, vfull, zz, mmax, iexc, eaetst, ierr, srel)
+!    if (ierr /= 0) then
+!       write (6, '(a/a,i2)') 'run_config: WARNING  for AE atom,', &
+!     &       ' WARNING no output for configuration', jj
+!       if (ierr == -1) then
+!          write (6, '(a,i4)') 'no classical turning point error, iteration', it
+!       else
+!          write (6, '(a)') 'run_config: WARNING self-consistency failed to converge'
+!       end if
+!       deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
+!       deallocate (uu, up)
+!       return
+!    end if
 
 !first pseudoatom run from reference to maximally-ionized configuration
    do l1 = 1, 4
@@ -309,4 +309,4 @@ subroutine run_config(jj, nacnf, lacnf, facnf, nc, nvcnf, rhov, rhomod, rr, zz, 
    deallocate (rho, rhoc, rhocps, vi, vfull, vpuns_confined)
    deallocate (uu, up)
    return
-end subroutine run_config
+end subroutine run_config_ps_only
